@@ -23,7 +23,7 @@ CreateThread(function()
 	SetBlockingOfNonTemporaryEvents(truckerPed, true)
 
     local PedBlip = AddBlipForCoord(coords.x, coords.y, coords.z)
-    local blip = { blip = PedBlip, sprite = 739, color = 29, alpha = 255, route = false, scale = 0.7, shortRange = true, label = 'RoadRunner Logistics'}
+    local blip = { blip = PedBlip, sprite = 739, color = 24, alpha = 255, route = false, scale = 0.7, shortRange = true, label = 'RoadRunner Logistics'}
     CreateBlip(blip)
 
     exports['qb-target']:AddTargetEntity(truckerPed, {
@@ -59,7 +59,7 @@ end)
 
 function ReturnCollect()
     local truckCoords = GetEntityCoords(jobVehicle)
-    local wCoords = Config.PedLocation
+    local wCoords = vector3(Config.PedLocation.x, Config.PedLocation.y, Config.PedLocation.z)
 
     local dist = #(truckCoords - wCoords)
     if dist < 15.0 then
@@ -252,6 +252,8 @@ function ReleaseTrailer()
     }, {}, {}, {}, function() -- Done
         ClearPedTasks(player)
         signed = true
+        FreezeEntityPosition(locationPed, false)
+        SetEntityAsNoLongerNeeded(locationPed)
         if DoesEntityExist(jobTrailer) then
             FreezeEntityPosition(jobTrailer, false)
             AttachTrailer()

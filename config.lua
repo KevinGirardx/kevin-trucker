@@ -1,5 +1,7 @@
 Config = Config or {}
 
+Config.JobNeeded = false
+Config.JobName = 'Trucker'
 Config.PedModel = `a_m_o_soucent_02`
 Config.PedLocation = vector4(150.39, -3213.07, 5.86, 54.23)
 Config.FuelScript = 'ps-fuel' -- cdn-fuel, ps-fuel, lj-fuel change to whatever fuel system you use

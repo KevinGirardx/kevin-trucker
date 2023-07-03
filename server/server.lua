@@ -4,7 +4,15 @@ QBCore.Functions.CreateCallback('kevin-trucker:getreputation', function(source, 
     local playerId = source
     local player = QBCore.Functions.GetPlayer(playerId)
     local playerReputation = player.PlayerData.metadata['jobrep']['trucker']
-    cb(playerReputation)
+    if Config.JobNeeded then
+        if player.PlayerData.job.name == Config.JobName then
+            cb(playerReputation)
+        else
+            TriggerClientEvent('QBCore:Notify', playerId, 'You don\'t work here', 'error', 3000)
+        end
+    else
+        cb(playerReputation)
+    end
 end)
 
 RegisterNetEvent('kevin-trucker:collectpayment', function (bool, payment, reputation, increase, increaseAmt)
