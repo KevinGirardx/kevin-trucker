@@ -1,5 +1,3 @@
-local QBCore = exports['qb-core']:GetCoreObject()
-
 local sphere = nil
 local trailerPos, trailerHash, pedPos, pedHash
 local jobVehicle = nil
@@ -12,6 +10,8 @@ local delivered = false
 local signed = false
 local payIncrease = false
 local payIncAmt = 0
+local player = cache.ped
+local progressBar = Config.ProgressBar == 'circle' and lib.progressCircle or lib.progressBar
 
 CreateThread(function()
     lib.requestModel(Config.PedModel)
@@ -26,13 +26,14 @@ CreateThread(function()
     local blip = { blip = PedBlip, sprite = 739, color = 24, alpha = 255, route = false, scale = 0.7, shortRange = true, label = 'RoadRunner Logistics'}
     CreateBlip(blip)
 
-    exports['qb-target']:AddTargetEntity(truckerPed, {
-        options = {
+    if Config.Target == 'ox' then
+        exports.ox_target:addLocalEntity(truckerPed, {
             {
+                name = 'kevin_trucker:getDelivery',
                 icon = 'fas fa-circle',
                 label = 'Get Delivery',
-                action = function()
-                    QBCore.Functions.TriggerCallback('kevin-trucker:getreputation',function(rep)
+                onSelect = function()
+                    lib.callback('kevin-trucker:getreputation', false, function(rep)
                         if rep then
                             VehicleMenu(rep)
                         end
@@ -41,31 +42,76 @@ CreateThread(function()
                 canInteract = function()
                     return not DoesEntityExist(jobVehicle)
                 end,
+                distance = 2.0
             },
             {
+                name = 'kevin_trucker:collectPayment',
                 icon = 'fas fa-dollar-sign',
                 label = 'Collect Payment',
-                action = function()
+                onSelect = function()
                     ReturnCollect()
                 end,
                 canInteract = function()
                     return not DoesEntityExist(jobTrailer) and delivered
                 end,
+                distance = 2.0
             },
             {
+                name = 'kevin_trucker:checkExperience',
                 icon = 'fas fa-circle',
                 label = 'Check Experience',
-                action = function()
-                    QBCore.Functions.TriggerCallback('kevin-trucker:getreputation',function(rep)
+                onSelect = function()
+                    lib.callback('kevin-trucker:getreputation', false, function(rep)
                         if rep then
                             QBCore.Functions.Notify('Job Experience: '..rep, 'primary', 6000)
                         end
                     end)
                 end,
+                distance = 2.0
             },
-        },
-        distance = 2.0
-    })
+        })
+    elseif Config.Target == 'qb' then
+        exports['qb-target']:AddTargetEntity(truckerPed, {
+            options = {
+                {
+                    icon = 'fas fa-circle',
+                    label = 'Get Delivery',
+                    action = function()
+                        lib.callback('kevin-trucker:getreputation', false, function(rep)
+                            if rep then
+                                VehicleMenu(rep)
+                            end
+                        end)
+                    end,
+                    canInteract = function()
+                        return not DoesEntityExist(jobVehicle)
+                    end,
+                },
+                {
+                    icon = 'fas fa-dollar-sign',
+                    label = 'Collect Payment',
+                    action = function()
+                        ReturnCollect()
+                    end,
+                    canInteract = function()
+                        return not DoesEntityExist(jobTrailer) and delivered
+                    end,
+                },
+                {
+                    icon = 'fas fa-circle',
+                    label = 'Check Experience',
+                    action = function()
+                        lib.callback('kevin-trucker:getreputation', false, function(rep)
+                            if rep then
+                                QBCore.Functions.Notify('Job Experience: '..rep, 'primary', 6000)
+                            end
+                        end)
+                    end,
+                },
+            },
+            distance = 2.0
+        })
+    end
 end)
 
 function ReturnCollect()
@@ -110,7 +156,9 @@ function VehicleMenu(rep)
                 title = vehiclename,
                 icon = 'fas fa-truck',
                 description = 'XP Needed: '..v.xpneeded,
+                image = v.image,
                 arrow = true,
+                progress = v.gaslevel,
                 onSelect = function (data)
                     SpawnVehicle(data)
                 end,
@@ -164,7 +212,6 @@ end
 
 function AddTruckBlip()
     CreateThread(function ()
-        local player = PlayerPedId()
         while DoesEntityExist(jobVehicle) do
             if not IsPedInVehicle(player, jobVehicle, false) then
                 if not DoesBlipExist(truckBlip) then
@@ -234,33 +281,54 @@ function SetupLocation()
         SetEntityInvincible(locationPed, true)
         SetBlockingOfNonTemporaryEvents(locationPed, true)
 
-        exports['qb-target']:AddTargetEntity(locationPed, {
-            options = {
+        if Config.Target == 'ox' then
+            exports.ox_target:addLocalEntity(locationPed, {
                 {
+                    name = 'trucker_setup_ped',
                     icon = 'fas fa-pen-to-square',
                     label = 'Sign & Release',
-                    action = function()
+                    onSelect = function()
                         ReleaseTrailer()
                     end,
                     canInteract = function()
                         return DoesEntityExist(jobTrailer) and not signed
                     end,
+                    distance = 2.0
                 },
-            },
-            distance = 2.0
-        })
+            })
+        elseif Config.Target == 'qb' then
+            exports['qb-target']:AddTargetEntity(locationPed, {
+                options = {
+                    {
+                        icon = 'fas fa-pen-to-square',
+                        label = 'Sign & Release',
+                        action = function()
+                            ReleaseTrailer()
+                        end,
+                        canInteract = function()
+                            return DoesEntityExist(jobTrailer) and not signed
+                        end,
+                    },
+                },
+                distance = 2.0
+            })
+        end
+
         sphere:remove()
     end
 end
 
 function ReleaseTrailer()
     signed = true
-    QBCore.Functions.Progressbar('signing_paper', 'Signing..', math.random(2500, 3000), false, true, {
-        disableMovement = true,
-        disableCarMovement = true,
-        disableMouse = false,
-        disableCombat = true,
-    }, {}, {}, {}, function() -- Done
+    if progressBar({
+        duration = math.random(2500, 3000),
+        label = 'Signing..',
+        position = 'bottom',
+        useWhileDead = false,
+        canCancel = true,
+        disable = { move = true, car = true, combat = true },
+        anim = { dict = 'missheistdockssetup1clipboard@base', clip = 'base', flag = 1 }
+    }) then
         ClearPedTasks(player)
         signed = true
         FreezeEntityPosition(locationPed, false)
@@ -270,17 +338,16 @@ function ReleaseTrailer()
             AttachTrailer()
             QBCore.Functions.Notify('Hook up trailer and get moving...', 'primary', 8000)
         end
-    end, function() -- Cancel
+    else
         ClearPedTasks(player)
         signed = false
         QBCore.Functions.Notify('Cancelled', 'error')
-    end)
+    end
 end
 
 function AttachTrailer()
     CreateThread(function ()
         while DoesEntityExist(jobTrailer) do
-            local player = PlayerPedId()
             local pCoords =  GetEntityCoords(player)
             local destCoords = vector3(dropLocation.x, dropLocation.y, dropLocation.z)
             local trailerCoords = GetEntityCoords(jobTrailer)

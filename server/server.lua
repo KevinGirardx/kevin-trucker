@@ -1,32 +1,30 @@
-local QBCore = exports['qb-core']:GetCoreObject()
-
-QBCore.Functions.CreateCallback('kevin-trucker:getreputation', function(source, cb)
-    local playerId = source
-    local player = QBCore.Functions.GetPlayer(playerId)
-    local playerReputation = player.PlayerData.metadata['trucking']
+lib.callback.register('kevin-trucker:getreputation', function(source, cb)
+    local PlayerId = source
+    local Player = QBCore.Functions.GetPlayer(PlayerId)
+    local playerReputation = Player.PlayerData.metadata['trucking']
     if Config.JobNeeded then
-        if player.PlayerData.job.name == Config.JobName then
-            cb(playerReputation)
+        if Player.PlayerData.job.name == Config.JobName then
+            return playerReputation
         else
-            TriggerClientEvent('QBCore:Notify', playerId, 'You don\'t work here', 'error', 3000)
+            TriggerClientEvent('QBCore:Notify', PlayerId, 'You don\'t work here', 'error', 3000)
         end
     else
-        cb(playerReputation)
+        return playerReputation
     end
 end)
 
 RegisterNetEvent('kevin-trucker:collectpayment', function (bool, payment, reputation, increase, increaseAmt)
-    local playerId = source
-    local player =  QBCore.Functions.GetPlayer(playerId)
-    if not player and not bool then return end
+    local PlayerId = source
+    local Player =  QBCore.Functions.GetPlayer(PlayerId)
+    if not Player and not bool then return end
 
-    local playerReputation = player.PlayerData.metadata['trucking']
+    local playerReputation = Player.PlayerData.metadata.trucking
     local rep = playerReputation + reputation
-	player.Functions.SetMetaData('trucking', rep)
+	Player.Functions.SetMetaData('trucking', rep)
 
     local payment = payment
     if increase then
         payment = payment + increaseAmt
     end
-    player.Functions.AddMoney('cash', payment, 'Trucking Payment')
+    Player.Functions.AddMoney('cash', payment, 'Trucking Payment')
 end)

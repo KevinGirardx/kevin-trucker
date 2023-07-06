@@ -1,9 +1,11 @@
-
 fx_version 'cerulean'
-
-author 'KevinGirardx'
-
 game 'gta5'
+lua54 'yes'
+
+name 'kevin-trucker'
+description 'Trucking Script for QBCore'
+author 'KevinGirardx'
+version '1.0.1'
 
 shared_script {
 	'config.lua',
@@ -15,13 +17,5 @@ client_scripts {
 }
 
 server_scripts {
-	'server/*.lua'
+	'server/*.lua',
 }
-
-lua54 'yes'
-
--- escrow_ignore {
---     'client/*.lua',
---     'server/*.lua',
---     'config.lua',
--- }
