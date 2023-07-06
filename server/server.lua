@@ -3,7 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 QBCore.Functions.CreateCallback('kevin-trucker:getreputation', function(source, cb)
     local playerId = source
     local player = QBCore.Functions.GetPlayer(playerId)
-    local playerReputation = player.PlayerData.metadata['jobrep']['trucker']
+    local playerReputation = player.PlayerData.metadata['trucking']
     if Config.JobNeeded then
         if player.PlayerData.job.name == Config.JobName then
             cb(playerReputation)
@@ -20,9 +20,9 @@ RegisterNetEvent('kevin-trucker:collectpayment', function (bool, payment, reputa
     local player =  QBCore.Functions.GetPlayer(playerId)
     if not player and not bool then return end
 
-    local playerReputation = player.PlayerData.metadata['jobrep']['trucker']
+    local playerReputation = player.PlayerData.metadata['trucking']
     local rep = playerReputation + reputation
-	player.Functions.SetMetaData('trucker', rep)
+	player.Functions.SetMetaData('trucking', rep)
 
     local payment = payment
     if increase then

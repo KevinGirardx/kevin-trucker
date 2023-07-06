@@ -52,6 +52,17 @@ CreateThread(function()
                     return not DoesEntityExist(jobTrailer) and delivered
                 end,
             },
+            {
+                icon = 'fas fa-circle',
+                label = 'Check Experience',
+                action = function()
+                    QBCore.Functions.TriggerCallback('kevin-trucker:getreputation',function(rep)
+                        if rep then
+                            QBCore.Functions.Notify('Job Experience: '..rep, 'primary', 6000)
+                        end
+                    end)
+                end,
+            },
         },
         distance = 2.0
     })
@@ -135,7 +146,7 @@ function SpawnVehicle(data)
     jobVehicle = CreateVehicle(data.vehicle, spawn.x, spawn.y, spawn.z, spawn.w, true, true)
     if DoesEntityExist(jobVehicle) then
         AddTruckBlip()
-
+        QBCore.Functions.Notify('Go to the location marked on your gps', 'primary', 8000)
         local VehiclePlate = QBCore.Functions.GetPlate(jobVehicle)
         networkID = NetworkGetNetworkIdFromEntity(jobVehicle)
         SetEntityAsMissionEntity(jobVehicle, true, true)
