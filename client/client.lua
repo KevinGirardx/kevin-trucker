@@ -251,7 +251,7 @@ function GetDestination()
 
     sphere = lib.zones.sphere({
         coords = vec3(trailerPos.x, trailerPos.y, trailerPos.z),
-        radius = 100,
+        radius = 30,
         debug = false,
         onEnter = SetupLocation,
     })
